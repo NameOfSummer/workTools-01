@@ -4,15 +4,20 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90',
-        outline: 'border border-input bg-card hover:bg-muted',
-        ghost: 'hover:bg-muted',
-        destructive: 'bg-destructive text-white hover:bg-destructive/90',
+        default:
+          'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
+        secondary:
+          'bg-secondary text-secondary-foreground hover:bg-secondary-hover active:bg-secondary-hover',
+        outline:
+          'border border-input bg-card text-foreground hover:border-primary hover:bg-accent hover:text-primary active:bg-accent',
+        ghost:
+          'text-foreground hover:bg-accent active:bg-accent',
+        destructive:
+          'bg-destructive text-white hover:bg-destructive-hover active:bg-destructive-hover',
       },
       size: {
         default: 'h-9 px-4 py-2',

@@ -4,11 +4,14 @@
 
 ## 機能
 
-- **ストップウォッチ** — 計測終了時に Google カレンダーへ予定を登録
+- **ストップウォッチ** — 経過時間の計測
+- **ブランチ名生成** — `feature/SP-[Jira]/[タスク番号]/dev` · `stg` 形式で生成・コピー、履歴管理
 - **JSON 整形** — 整形・圧縮・コピー
 - **ランダム文字列生成** — 文字種・文字数を選択して生成
 - **UNIX 時間（ミリ秒）** — 現在時刻の取得・日時変換
-- **設定** — Google ログイン/ログアウト、登録先カレンダーの選択
+- **画像カラーピッカー** — 画像の貼り付け・D&Dで色を取得・コピー
+- **正規表現テスター** — パターン・置換・マッチ一覧
+- **テキスト diff** — 2つのテキストを比較（JSON・ログ向け）
 
 ## 技術スタック
 
@@ -20,20 +23,8 @@
 
 ```bash
 npm install
-cp .env.example .env
-# .env に VITE_GOOGLE_CLIENT_ID を設定
 npm run dev
 ```
-
-## Google カレンダー連携の設定
-
-1. [Google Cloud Console](https://console.cloud.google.com/) でプロジェクトを作成
-2. **Google Calendar API** を有効化
-3. **OAuth 2.0 クライアント ID**（ウェブアプリケーション）を作成
-4. **承認済みの JavaScript 生成元** に以下を追加:
-   - `http://localhost:5173`（開発用）
-   - `https://<username>.github.io`（GitHub Pages 用）
-5. クライアント ID を `.env` の `VITE_GOOGLE_CLIENT_ID` に設定
 
 ## デプロイ（GitHub Pages）
 
@@ -41,10 +32,8 @@ npm run dev
 npm run deploy
 ```
 
-リポジトリの Settings → Pages で **Deploy from branch: gh-pages** を選択してください。
-
-公開 URL: `https://<username>.github.io/workTools-01/`
+公開 URL: `https://nameofsummer.github.io/workTools-01/`
 
 ## UI
 
-INFOBAR「NISHIKIGOI（錦鯉）」を参考にした配色（クリムゾン・ネイビー・桜色）を使用しています。
+INFOBAR「NISHIKIGOI（錦鯉）」を参考にした配色（クリーム・白・ブルーグレー・赤・チャコール）を使用しています。

@@ -1,44 +1,43 @@
-import { GoogleAuthProvider } from '@/contexts/GoogleAuthContext'
 import { AppTabs } from '@/components/AppTabs'
+import { SettingsDialog } from '@/components/SettingsDialog'
+import { CopyProvider } from '@/contexts/CopyContext'
 
 function App() {
   return (
-    <GoogleAuthProvider>
-      <div className="min-h-screen">
-        <header className="border-b bg-card/80 backdrop-blur-sm">
-          <div className="container mx-auto max-w-3xl px-4 py-5">
-            <div className="flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-white font-bold text-sm shadow-sm"
-                style={{
-                  background: 'linear-gradient(135deg, #b22234 0%, #1b3a6b 50%, #e8b4b8 100%)',
-                }}
-              >
-                WT
+    <CopyProvider>
+      <div className="flex min-h-screen min-w-0 flex-col bg-background">
+        <header className="border-b-2 border-primary bg-secondary">
+          <div className="container mx-auto max-w-3xl min-w-0 px-3 py-4 min-[400px]:px-4 min-[400px]:py-5">
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2 min-[400px]:gap-3">
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground min-[400px]:h-10 min-[400px]:w-10 min-[400px]:text-sm"
+                  aria-hidden="true"
+                >
+                  WT
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-lg font-bold tracking-wide text-foreground min-[400px]:text-xl">
+                    Work Tools
+                  </h1>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-foreground">
-                  Work Tools
-                </h1>
-                <p className="text-xs text-muted-foreground">
-                  エンジニア向け便利ツール集
-                </p>
-              </div>
+              <SettingsDialog />
             </div>
           </div>
         </header>
 
-        <main className="container mx-auto max-w-3xl px-4 py-6">
+        <main className="container mx-auto max-w-3xl min-w-0 flex-1 px-3 py-4 min-[400px]:px-4 min-[400px]:py-6">
           <AppTabs />
         </main>
 
-        <footer className="border-t mt-8">
-          <div className="container mx-auto max-w-3xl px-4 py-4 text-center text-xs text-muted-foreground">
-            NISHIKIGOI-inspired UI · workTools-01
+        <footer className="border-t border-border bg-secondary">
+          <div className="container mx-auto max-w-3xl min-w-0 px-3 py-3 text-center text-xs tracking-wide text-muted-foreground min-[400px]:px-4 min-[400px]:py-4">
+            <span className="break-words">NISHIKIGOI-inspired UI · workTools-01</span>
           </div>
         </footer>
       </div>
-    </GoogleAuthProvider>
+    </CopyProvider>
   )
 }
 

@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { useCopy } from '@/contexts/CopyContext'
 
 export function JsonFormatter() {
+  const { copy } = useCopy()
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -30,8 +32,8 @@ export function JsonFormatter() {
     }
   }
 
-  const copyOutput = async () => {
-    if (output) await navigator.clipboard.writeText(output)
+  const copyOutput = () => {
+    if (output) copy(output)
   }
 
   return (

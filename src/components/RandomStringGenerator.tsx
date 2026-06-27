@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useCopy } from '@/contexts/CopyContext'
 
 const CHARSETS = {
   lowercase: 'abcdefghijklmnopqrstuvwxyz',
@@ -16,6 +17,7 @@ const CHARSETS = {
 type CharsetKey = keyof typeof CHARSETS
 
 export function RandomStringGenerator() {
+  const { copy } = useCopy()
   const [length, setLength] = useState(16)
   const [selected, setSelected] = useState<Set<CharsetKey>>(
     new Set(['lowercase', 'uppercase', 'numbers'])
@@ -41,8 +43,8 @@ export function RandomStringGenerator() {
     setResult(str)
   }
 
-  const copyResult = async () => {
-    if (result) await navigator.clipboard.writeText(result)
+  const copyResult = () => {
+    if (result) copy(result)
   }
 
   return (

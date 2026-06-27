@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useCopy } from '@/contexts/CopyContext'
 
 function formatLocalDate(ms: number): string {
   return new Date(ms).toLocaleString('ja-JP', {
@@ -16,6 +17,7 @@ function formatLocalDate(ms: number): string {
 }
 
 export function UnixTimeTool() {
+  const { copy } = useCopy()
   const [now, setNow] = useState(() => Date.now())
   const [inputMs, setInputMs] = useState('')
   const [convertedDate, setConvertedDate] = useState<string | null>(null)
@@ -26,8 +28,8 @@ export function UnixTimeTool() {
     return () => clearInterval(id)
   }, [])
 
-  const copyNow = async () => {
-    await navigator.clipboard.writeText(String(now))
+  const copyNow = () => {
+    copy(String(now))
   }
 
   const convertToDate = () => {
@@ -48,12 +50,12 @@ export function UnixTimeTool() {
         <CardDescription>現在の UNIX 時間を取得・変換</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="rounded-lg border bg-muted/50 p-4">
+        <div className="rounded-sm border border-border bg-accent p-3 min-[400px]:p-4">
           <p className="text-sm text-muted-foreground mb-1">現在時刻（ミリ秒）</p>
-          <p className="text-3xl font-mono font-semibold text-primary tabular-nums">
+          <p className="text-2xl font-mono font-semibold text-primary tabular-nums break-all min-[400px]:text-3xl">
             {now}
           </p>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="mt-2 text-xs text-muted-foreground break-words min-[400px]:text-sm">
             {formatLocalDate(now)}
           </p>
           <Button className="mt-3" size="sm" onClick={copyNow}>
