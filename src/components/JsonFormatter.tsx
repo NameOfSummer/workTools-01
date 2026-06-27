@@ -4,12 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea'
 import { useCopy } from '@/contexts/CopyContext'
 
+/** JSON 整形・圧縮タブ */
 export function JsonFormatter() {
   const { copy } = useCopy()
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  /** インデント付き JSON に整形する */
   const format = () => {
     try {
       const parsed = JSON.parse(input)
@@ -21,6 +23,7 @@ export function JsonFormatter() {
     }
   }
 
+  /** 1行に圧縮した JSON を出力する */
   const minify = () => {
     try {
       const parsed = JSON.parse(input)

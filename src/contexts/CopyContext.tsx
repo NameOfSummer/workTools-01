@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 
+/** copied! トーストの表示時間 (ms) */
 const COPIED_DURATION_MS = 500
 
 interface CopyContextValue {
@@ -16,6 +17,9 @@ interface CopyContextValue {
 
 const CopyContext = createContext<CopyContextValue | null>(null)
 
+/**
+ * クリップボードコピーと copied! トースト表示を提供する Provider
+ */
 export function CopyProvider({ children }: { children: ReactNode }) {
   const [showCopied, setShowCopied] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -26,6 +30,7 @@ export function CopyProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  /** テキストをクリップボードにコピーし、短時間トーストを表示する */
   const copy = useCallback(async (text: string) => {
     if (!text) return
     await navigator.clipboard.writeText(text)
@@ -50,6 +55,7 @@ export function CopyProvider({ children }: { children: ReactNode }) {
   )
 }
 
+/** コピーコンテキストを取得する */
 export function useCopy() {
   const ctx = useContext(CopyContext)
   if (!ctx) {

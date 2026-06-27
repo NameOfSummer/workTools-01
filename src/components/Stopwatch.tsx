@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+/** 経過ミリ秒を HH:MM:SS.cc 形式の文字列にフォーマットする */
 function formatElapsed(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000)
   const hours = Math.floor(totalSeconds / 3600)
@@ -14,6 +15,7 @@ function formatElapsed(ms: number): string {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(millis).padStart(2, '0')}`
 }
 
+/** ストップウォッチタブ */
 export function Stopwatch() {
   const [elapsed, setElapsed] = useState(0)
   const [running, setRunning] = useState(false)

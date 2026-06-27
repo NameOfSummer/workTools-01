@@ -6,13 +6,19 @@ import { pixelToColor, type RgbColor } from '@/lib/colorUtils'
 import { useCopy } from '@/contexts/CopyContext'
 import { cn } from '@/lib/utils'
 
+/** キャンバス描画時の最大幅（px）— 大きい画像の表示サイズ上限 */
 const MAX_CANVAS_WIDTH = 640
 
+/**
+ * 要素が表示中のタブパネル内にあるか判定する
+ * 非表示タブでの paste イベントを無視するために使う
+ */
 function isTabPanelVisible(el: HTMLElement | null): boolean {
   const panel = el?.closest('[role="tabpanel"]')
   return panel instanceof HTMLElement && !panel.hidden
 }
 
+/** 画像からクリック位置の色を取得するカラーピッカータブ */
 export function ImageColorPicker() {
   const { copy } = useCopy()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -23,6 +29,7 @@ export function ImageColorPicker() {
   const [isDragOver, setIsDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  /** File を Data URL に読み込み canvas 描画用の imageSrc にセットする */
   const loadImageFromFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
       setError('画像ファイルを選択してください')
@@ -40,6 +47,7 @@ export function ImageColorPicker() {
     reader.readAsDataURL(file)
   }, [])
 
+  /** imageSrc をコンテナ幅に合わせてスケールし canvas に描画する */
   const drawImageToCanvas = useCallback(() => {
     if (!imageSrc || !canvasRef.current || !containerRef.current) return
 
@@ -66,6 +74,7 @@ export function ImageColorPicker() {
     drawImageToCanvas()
   }, [drawImageToCanvas])
 
+  /** このタブが表示中のときだけクリップボードから画像を貼り付ける */
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       if (!isTabPanelVisible(containerRef.current)) return
@@ -87,12 +96,14 @@ export function ImageColorPicker() {
     return () => document.removeEventListener('paste', onPaste)
   }, [loadImageFromFile])
 
+  /** ファイル選択ダイアログから画像を読み込む */
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) loadImageFromFile(file)
     e.target.value = ''
   }
 
+  /** ドラッグ中のドロップゾーン表示を有効にする */
   const handleDragOver = (e: React.DragEvent) => {
     if (!e.dataTransfer.types.includes('Files')) return
     e.preventDefault()
@@ -101,11 +112,13 @@ export function ImageColorPicker() {
     e.dataTransfer.dropEffect = 'copy'
   }
 
+  /** ドラッグゾーンのハイライトを解除する */
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
   }
 
+  /** ドロップされた画像ファイルを読み込む */
   const handleDrop = (e: React.DragEvent) => {
     if (!e.dataTransfer.types.includes('Files')) return
     e.preventDefault()
@@ -115,6 +128,7 @@ export function ImageColorPicker() {
     if (file) loadImageFromFile(file)
   }
 
+  /** クリック位置のピクセル色を取得し HEX/RGB 形式で保持する */
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -134,12 +148,14 @@ export function ImageColorPicker() {
     setPicked(pixelToColor(r, g, b))
   }
 
+  /** 読み込み画像と取得色をクリアする */
   const clearImage = () => {
     setImageSrc(null)
     setPicked(null)
     setError(null)
   }
 
+  /** 空でなければクリップボードにコピーする */
   const copyText = (text: string) => {
     if (text) copy(text)
   }

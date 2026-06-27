@@ -1,12 +1,17 @@
+/** ブランチ名フォーム入力の localStorage キー */
 const FORM_KEY = 'worktools-branch-form'
+
+/** ブランチ名生成履歴の localStorage キー */
 const HISTORY_KEY = 'worktools-branch-history'
 
+/** ブランチ名生成フォームの入力値 */
 export interface BranchFormInputs {
   jiraCode: string
   taskNumber: string
   issueName: string
 }
 
+/** 生成履歴の1件分 */
 export interface BranchHistoryEntry {
   id: string
   jiraCode: string
@@ -17,6 +22,10 @@ export interface BranchHistoryEntry {
   createdAt: number
 }
 
+/**
+ * dev / stg 用のブランチ名文字列を組み立てる
+ * 形式: feature/SP-{jiraCode}/{taskNumber}/{env}
+ */
 export function buildBranchName(
   jiraCode: string,
   taskNumber: string,
@@ -25,6 +34,7 @@ export function buildBranchName(
   return `feature/SP-${jiraCode.trim()}/${taskNumber.trim()}/${env}`
 }
 
+/** localStorage からフォーム入力を読み込む — 失敗時は空文字で返す */
 export function loadFormInputs(): BranchFormInputs {
   try {
     const raw = localStorage.getItem(FORM_KEY)
@@ -40,10 +50,12 @@ export function loadFormInputs(): BranchFormInputs {
   }
 }
 
+/** フォーム入力を localStorage に保存する */
 export function saveFormInputs(inputs: BranchFormInputs): void {
   localStorage.setItem(FORM_KEY, JSON.stringify(inputs))
 }
 
+/** 生成履歴を localStorage から読み込む */
 export function loadHistory(): BranchHistoryEntry[] {
   try {
     const raw = localStorage.getItem(HISTORY_KEY)
@@ -55,10 +67,14 @@ export function loadHistory(): BranchHistoryEntry[] {
   }
 }
 
+/** 生成履歴を localStorage に保存する */
 export function saveHistory(entries: BranchHistoryEntry[]): void {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(entries))
 }
 
+/**
+ * 履歴の先頭に新しいエントリを追加して保存する
+ */
 export function addHistoryEntry(
   inputs: BranchFormInputs,
   branchDev: string,

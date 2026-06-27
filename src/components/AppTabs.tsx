@@ -14,6 +14,8 @@ import {
   Pipette,
   Regex,
   FileDiff,
+  Database,
+  CaseSensitive,
   type LucideIcon,
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,11 +33,16 @@ import { BranchNameGenerator } from '@/components/BranchNameGenerator'
 import { ImageColorPicker } from '@/components/ImageColorPicker'
 import { RegexTester } from '@/components/RegexTester'
 import { DiffViewer } from '@/components/DiffViewer'
+import { SqlFormatter } from '@/components/SqlFormatter'
+import { CaseConverter } from '@/components/CaseConverter'
 import {
   loadTabOrder,
   saveTabOrder,
   type TabId,
 } from '@/lib/tabOrderStorage'
+import { TAB_METADATA } from '@/lib/tabMetadata'
+import { loadTabVisibility } from '@/lib/tabVisibilityStorage'
+import { useTabSettings } from '@/contexts/TabSettingsContext'
 import { cn } from '@/lib/utils'
 
 interface TabConfig {
@@ -44,53 +51,27 @@ interface TabConfig {
   labelShort: string
 }
 
+/** タブ ID ごとのアイコンと表示ラベル */
 const TAB_CONFIG: Record<TabId, TabConfig> = {
-  stopwatch: {
-    icon: Timer,
-    label: 'ストップウォッチ',
-    labelShort: '計測',
-  },
-  branch: {
-    icon: GitBranch,
-    label: 'ブランチ',
-    labelShort: 'Branch',
-  },
-  json: {
-    icon: Braces,
-    label: 'JSON',
-    labelShort: 'JSON',
-  },
-  random: {
-    icon: Shuffle,
-    label: 'ランダム',
-    labelShort: '乱数',
-  },
-  unix: {
-    icon: Clock,
-    label: 'UNIX時間',
-    labelShort: '時間',
-  },
-  color: {
-    icon: Pipette,
-    label: 'カラーピッカー',
-    labelShort: '色',
-  },
-  regex: {
-    icon: Regex,
-    label: '正規表現',
-    labelShort: '正規',
-  },
-  diff: {
-    icon: FileDiff,
-    label: 'diff',
-    labelShort: 'diff',
-  },
+  stopwatch: { icon: Timer, ...TAB_METADATA.stopwatch },
+  branch: { icon: GitBranch, ...TAB_METADATA.branch },
+  json: { icon: Braces, ...TAB_METADATA.json },
+  sql: { icon: Database, ...TAB_METADATA.sql },
+  case: { icon: CaseSensitive, ...TAB_METADATA.case },
+  random: { icon: Shuffle, ...TAB_METADATA.random },
+  unix: { icon: Clock, ...TAB_METADATA.unix },
+  color: { icon: Pipette, ...TAB_METADATA.color },
+  regex: { icon: Regex, ...TAB_METADATA.regex },
+  diff: { icon: FileDiff, ...TAB_METADATA.diff },
 }
 
+/** タブ ID ごとに表示するツールコンポーネント */
 const TAB_CONTENT: Record<TabId, ReactNode> = {
   stopwatch: <Stopwatch />,
   branch: <BranchNameGenerator />,
   json: <JsonFormatter />,
+  sql: <SqlFormatter />,
+  case: <CaseConverter />,
   random: <RandomStringGenerator />,
   unix: <UnixTimeTool />,
   color: <ImageColorPicker />,
@@ -98,6 +79,12 @@ const TAB_CONTENT: Record<TabId, ReactNode> = {
   diff: <DiffViewer />,
 }
 
+/**
+ * 画面幅に応じたタブラベル表示モードを返す
+ * - 399px 以下: アイコンのみ
+ * - 400–639px: 短縮ラベル
+ * - 640px 以上: フルラベル
+ */
 function useTabLabelMode() {
   const [iconOnly, setIconOnly] = useState(false)
   const [shortLabel, setShortLabel] = useState(false)
@@ -145,6 +132,7 @@ interface TabTriggerItemProps {
   fullLabel: boolean
 }
 
+/** ドラッグ並び替え対応のタブボタン1つ分 */
 function TabTriggerItem({
   id,
   icon: Icon,
@@ -178,6 +166,7 @@ function TabTriggerItem({
     return () => window.removeEventListener('resize', checkTruncation)
   }, [checkTruncation, label, labelShort, iconOnly, shortLabel, fullLabel])
 
+  // アイコンのみ / 省略時 / 切り詰め時はツールチップでフル名を表示
   const showTooltip =
     iconOnly ||
     (fullLabel && fullTruncated) ||
@@ -187,11 +176,11 @@ function TabTriggerItem({
     <span
       className={cn(
         'inline-flex min-w-0 w-full flex-1 items-center justify-center',
-        'gap-0 px-1 py-2 min-[400px]:gap-1 min-[400px]:px-2 min-[640px]:gap-1.5 min-[640px]:px-3'
+        'gap-0 px-0.5 py-1.5 min-[400px]:gap-1 min-[400px]:px-2 min-[400px]:py-2 min-[640px]:gap-1.5 min-[640px]:px-3'
       )}
       onMouseEnter={checkTruncation}
     >
-      <Icon className="h-4 w-4 shrink-0" />
+      <Icon className="h-3.5 w-3.5 shrink-0 min-[400px]:h-4 min-[400px]:w-4" />
       <span ref={fullLabelRef} className="hidden truncate min-[640px]:inline">
         {label}
       </span>
@@ -213,7 +202,7 @@ function TabTriggerItem({
       onDrop={(e) => onDrop(id, e)}
       onDragEnd={onDragEnd}
       className={cn(
-        'min-w-0 flex-1 p-0 cursor-grab active:cursor-grabbing',
+        'min-w-0 w-full p-0 cursor-grab active:cursor-grabbing',
         draggedId === id && 'opacity-50',
         dragOverId === id &&
           draggedId !== id &&
@@ -232,13 +221,29 @@ function TabTriggerItem({
   )
 }
 
+/** ドラッグ並び替え可能なタブナビゲーション */
 export function AppTabs() {
+  const { visibility } = useTabSettings()
   const [order, setOrder] = useState<TabId[]>(() => loadTabOrder())
-  const [activeTab, setActiveTab] = useState<TabId>(() => loadTabOrder()[0])
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const initialOrder = loadTabOrder()
+    const initialVisibility = loadTabVisibility()
+    return initialOrder.find((id) => initialVisibility[id]) ?? initialOrder[0]
+  })
   const [draggedId, setDraggedId] = useState<TabId | null>(null)
   const [dragOverId, setDragOverId] = useState<TabId | null>(null)
   const labelMode = useTabLabelMode()
 
+  const visibleOrder = order.filter((id) => visibility[id])
+
+  // 非表示にしたタブが選択中なら、表示中の先頭タブへ切り替える
+  useEffect(() => {
+    if (visibility[activeTab]) return
+    const firstVisible = order.find((id) => visibility[id])
+    if (firstVisible) setActiveTab(firstVisible)
+  }, [visibility, activeTab, order])
+
+  /** ドラッグでタブの並び順を入れ替え、localStorage に保存する */
   const reorder = (fromId: TabId, toId: TabId) => {
     if (fromId === toId) return
     const next = [...order]
@@ -274,6 +279,9 @@ export function AppTabs() {
     setDragOverId(null)
   }
 
+  // 2段表示用: 表示タブ数の半分 (切り上げ) を列数にする
+  const tabColumns = Math.max(1, Math.ceil(visibleOrder.length / 2))
+
   return (
     <TooltipProvider delayDuration={200}>
       <Tabs
@@ -281,8 +289,13 @@ export function AppTabs() {
         onValueChange={(v) => setActiveTab(v as TabId)}
         className="w-full min-w-0"
       >
-        <TabsList className="flex h-auto min-w-0 w-full gap-0.5 p-0.5 min-[400px]:gap-1 min-[400px]:p-1">
-          {order.map((id) => {
+        <TabsList
+          className="grid h-auto min-w-0 w-full auto-rows-fr gap-0 p-0.5 min-[400px]:gap-1 min-[400px]:p-1"
+          style={{
+            gridTemplateColumns: `repeat(${tabColumns}, minmax(0, 1fr))`,
+          }}
+        >
+          {visibleOrder.map((id) => {
             const { icon, label, labelShort } = TAB_CONFIG[id]
             return (
               <TabTriggerItem
@@ -305,8 +318,8 @@ export function AppTabs() {
           })}
         </TabsList>
 
-        {order.map((id) => (
-          <TabsContent key={id} value={id} className="min-w-0">
+        {visibleOrder.map((id) => (
+          <TabsContent key={id} value={id} className="mt-3 min-w-0 min-[400px]:mt-4">
             {TAB_CONTENT[id]}
           </TabsContent>
         ))}

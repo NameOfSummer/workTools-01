@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -15,7 +16,55 @@ import {
   type BranchHistoryEntry,
 } from '@/lib/branchNameStorage'
 import { useCopy } from '@/contexts/CopyContext'
+import { cn } from '@/lib/utils'
 
+/**
+ * テキスト行とコピーアイコンボタンを並べる行コンポーネント
+ * 生成結果・履歴の dev/stg ブランチ名表示に使う
+ */
+function CopyableRow({
+  text,
+  label,
+  mono = false,
+  onCopy,
+  copyLabel,
+}: {
+  text: string
+  label?: string
+  mono?: boolean
+  onCopy: (text: string) => void
+  copyLabel: string
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-1">
+      {label && (
+        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+          {label}
+        </span>
+      )}
+      <span
+        className={cn(
+          'min-w-0 flex-1 break-all text-sm text-foreground',
+          mono && 'font-mono text-xs min-[400px]:text-sm'
+        )}
+      >
+        {text}
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+        onClick={() => onCopy(text)}
+        aria-label={copyLabel}
+      >
+        <Copy className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  )
+}
+
+/** Jira 課題情報から dev/stg ブランチ名を生成し履歴を管理するタブ */
 export function BranchNameGenerator() {
   const { copy } = useCopy()
   const [jiraCode, setJiraCode] = useState(() => loadFormInputs().jiraCode)
@@ -27,12 +76,35 @@ export function BranchNameGenerator() {
   const [history, setHistory] = useState<BranchHistoryEntry[]>(() => loadHistory())
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
+  /** フォーム入力を localStorage に自動保存する */
   useEffect(() => {
     saveFormInputs({ jiraCode, taskNumber, issueName })
   }, [jiraCode, taskNumber, issueName])
 
+  /** 生成に必須の Jira コードとタスクNo. が揃っているか */
   const canGenerate = jiraCode.trim().length > 0 && taskNumber.trim().length > 0
 
+  /** リセットボタンを有効にするか（何か入力・結果があるか） */
+  const hasFormContent =
+    issueName.trim().length > 0 ||
+    jiraCode.trim().length > 0 ||
+    taskNumber.trim().length > 0 ||
+    branchDev.length > 0 ||
+    branchStg.length > 0 ||
+    error !== null
+
+  /** フォーム・生成結果・エラーを初期状態に戻す */
+  const resetForm = () => {
+    setIssueName('')
+    setJiraCode('')
+    setTaskNumber('')
+    setBranchDev('')
+    setBranchStg('')
+    setError(null)
+    saveFormInputs({ jiraCode: '', taskNumber: '', issueName: '' })
+  }
+
+  /** dev/stg ブランチ名を生成し履歴に追加する */
   const generate = () => {
     if (!canGenerate) {
       setError('Jira 課題コードとタスクNo.を入力してください')
@@ -47,10 +119,12 @@ export function BranchNameGenerator() {
     setHistory(loadHistory())
   }
 
+  /** 空でなければクリップボードにコピーする */
   const copyText = (text: string) => {
     if (text) copy(text)
   }
 
+  /** 履歴エントリの選択状態を切り替える */
   const toggleSelect = (id: string, checked: boolean) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
@@ -60,14 +134,17 @@ export function BranchNameGenerator() {
     })
   }
 
+  /** 履歴をすべて選択する */
   const selectAll = () => {
     setSelectedIds(new Set(history.map((e) => e.id)))
   }
 
+  /** 履歴の選択をすべて解除する */
   const clearSelection = () => {
     setSelectedIds(new Set())
   }
 
+  /** 選択中の履歴エントリを削除する */
   const deleteSelected = () => {
     if (selectedIds.size === 0) return
     const next = history.filter((e) => !selectedIds.has(e.id))
@@ -76,6 +153,7 @@ export function BranchNameGenerator() {
     setSelectedIds(new Set())
   }
 
+  /** 履歴をすべて削除する */
   const deleteAll = () => {
     saveHistory([])
     setHistory([])
@@ -89,6 +167,15 @@ export function BranchNameGenerator() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="issue-name">課題名</Label>
+            <Input
+              id="issue-name"
+              placeholder="ログイン画面のバグ修正"
+              value={issueName}
+              onChange={(e) => setIssueName(e.target.value)}
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="jira-code">Jira 課題コード</Label>
             <Input
@@ -107,20 +194,19 @@ export function BranchNameGenerator() {
               onChange={(e) => setTaskNumber(e.target.value)}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="issue-name">課題名</Label>
-            <Input
-              id="issue-name"
-              placeholder="ログイン画面のバグ修正"
-              value={issueName}
-              onChange={(e) => setIssueName(e.target.value)}
-            />
-          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <Button onClick={generate} disabled={!canGenerate}>
             生成
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={resetForm}
+            disabled={!hasFormContent}
+          >
+            リセット
           </Button>
         </div>
 
@@ -128,36 +214,33 @@ export function BranchNameGenerator() {
 
         {(branchDev || branchStg) && (
           <div className="space-y-3 rounded-sm border border-border bg-accent p-3 min-[400px]:p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-medium text-foreground">生成結果</p>
-            </div>
+            <p className="text-sm font-medium text-foreground">生成結果</p>
             <div className="space-y-2">
-              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="min-w-0 flex-1 text-xs font-mono break-all min-[400px]:text-sm">
-                  {branchDev}
-                </code>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full shrink-0 sm:w-auto"
-                  onClick={() => copyText(branchDev)}
-                >
-                  dev コピー
-                </Button>
-              </div>
-              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="min-w-0 flex-1 text-xs font-mono break-all min-[400px]:text-sm">
-                  {branchStg}
-                </code>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full shrink-0 sm:w-auto"
-                  onClick={() => copyText(branchStg)}
-                >
-                  stg コピー
-                </Button>
-              </div>
+              {issueName.trim() && (
+                <CopyableRow
+                  text={issueName.trim()}
+                  onCopy={copyText}
+                  copyLabel="課題名をコピー"
+                />
+              )}
+              {branchDev && (
+                <CopyableRow
+                  label="dev"
+                  text={branchDev}
+                  mono
+                  onCopy={copyText}
+                  copyLabel="dev ブランチ名をコピー"
+                />
+              )}
+              {branchStg && (
+                <CopyableRow
+                  label="stg"
+                  text={branchStg}
+                  mono
+                  onCopy={copyText}
+                  copyLabel="stg ブランチ名をコピー"
+                />
+              )}
             </div>
           </div>
         )}
@@ -209,39 +292,41 @@ export function BranchNameGenerator() {
                       onCheckedChange={(c) => toggleSelect(entry.id, c === true)}
                       className="mt-0.5"
                     />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <Label
-                        htmlFor={`hist-${entry.id}`}
-                        className="block font-medium text-foreground cursor-pointer break-words"
-                      >
-                        {entry.issueName || '（課題名なし）'}
-                      </Label>
-                      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                        <code className="min-w-0 flex-1 text-xs font-mono break-all">
-                          {entry.branchDev}
-                        </code>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full shrink-0 sm:w-auto"
-                          onClick={() => copyText(entry.branchDev)}
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="flex min-w-0 items-start gap-1">
+                        <Label
+                          htmlFor={`hist-${entry.id}`}
+                          className="min-w-0 flex-1 font-medium text-foreground cursor-pointer break-words"
                         >
-                          dev
-                        </Button>
+                          {entry.issueName || '（課題名なし）'}
+                        </Label>
+                        {entry.issueName && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+                            onClick={() => copyText(entry.issueName)}
+                            aria-label="課題名をコピー"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </div>
-                      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                        <code className="min-w-0 flex-1 text-xs font-mono break-all">
-                          {entry.branchStg}
-                        </code>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full shrink-0 sm:w-auto"
-                          onClick={() => copyText(entry.branchStg)}
-                        >
-                          stg
-                        </Button>
-                      </div>
+                      <CopyableRow
+                        label="dev"
+                        text={entry.branchDev}
+                        mono
+                        onCopy={copyText}
+                        copyLabel="dev ブランチ名をコピー"
+                      />
+                      <CopyableRow
+                        label="stg"
+                        text={entry.branchStg}
+                        mono
+                        onCopy={copyText}
+                        copyLabel="stg ブランチ名をコピー"
+                      />
                     </div>
                   </div>
                 </li>

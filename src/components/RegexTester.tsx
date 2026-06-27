@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useCopy } from '@/contexts/CopyContext'
 
+/** 正規表現フラグの選択肢（UI 表示ラベル付き） */
 const FLAG_OPTIONS = [
   { id: 'g', label: 'g（全体検索）' },
   { id: 'i', label: 'i（大文字小文字無視）' },
@@ -16,12 +17,14 @@ const FLAG_OPTIONS = [
 
 type FlagId = (typeof FLAG_OPTIONS)[number]['id']
 
+/** 1件のマッチ結果（位置・文字列・キャプチャグループ） */
 interface RegexMatch {
   index: number
   match: string
   groups: string[]
 }
 
+/** 正規表現のマッチ確認・置換プレビューを行うタブ */
 export function RegexTester() {
   const { copy } = useCopy()
   const [pattern, setPattern] = useState('')
@@ -31,6 +34,7 @@ export function RegexTester() {
 
   const flagString = [...flags].join('')
 
+  /** パターンに対するマッチ一覧と置換結果を算出する（不正な正規表現は error に格納） */
   const result = useMemo(() => {
     if (!pattern) {
       return { matches: [] as RegexMatch[], replaced: null as string | null, error: null }
@@ -71,6 +75,7 @@ export function RegexTester() {
     }
   }, [pattern, flagString, flags, testText, replacement])
 
+  /** フラグのオン/オフを切り替える */
   const toggleFlag = (id: FlagId, checked: boolean) => {
     const next = new Set(flags)
     if (checked) next.add(id)

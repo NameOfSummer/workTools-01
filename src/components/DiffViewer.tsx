@@ -7,16 +7,19 @@ import { Textarea } from '@/components/ui/textarea'
 import { useCopy } from '@/contexts/CopyContext'
 import { cn } from '@/lib/utils'
 
+/** 2つのテキストを行単位で比較する diff タブ */
 export function DiffViewer() {
   const { copy } = useCopy()
   const [before, setBefore] = useState('')
   const [after, setAfter] = useState('')
 
+  /** diff ライブラリで行単位の差分パーツを算出する */
   const diffParts = useMemo(() => {
     if (!before && !after) return []
     return diffLines(before, after)
   }, [before, after])
 
+  /** コピー用に unified diff 風（+ / - プレフィックス）のテキストに変換する */
   const diffText = useMemo(() => {
     return diffParts
       .map((part) => {

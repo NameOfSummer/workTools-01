@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useCopy } from '@/contexts/CopyContext'
 
+/** 文字種ごとの使用可能文字セット */
 const CHARSETS = {
   lowercase: 'abcdefghijklmnopqrstuvwxyz',
   uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -16,6 +17,7 @@ const CHARSETS = {
 
 type CharsetKey = keyof typeof CHARSETS
 
+/** ランダム文字列生成タブ */
 export function RandomStringGenerator() {
   const { copy } = useCopy()
   const [length, setLength] = useState(16)

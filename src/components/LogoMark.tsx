@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 
+/** 3×3 タイルの色配列 (赤・ベージュ・白) */
 const TILES = [
   '#de091d',
   '#f8f0e5',
@@ -12,6 +13,7 @@ const TILES = [
   '#f8f0e5',
 ] as const
 
+/** ヘッダー・ログイン画面用の NISHIKIGOI 風ロゴマーク */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <div

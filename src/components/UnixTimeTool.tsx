@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCopy } from '@/contexts/CopyContext'
 
+/** ミリ秒タイムスタンプを日本語ロケールの日時文字列に変換する */
 function formatLocalDate(ms: number): string {
   return new Date(ms).toLocaleString('ja-JP', {
     year: 'numeric',
@@ -16,6 +17,7 @@ function formatLocalDate(ms: number): string {
   })
 }
 
+/** UNIX 時間 (ミリ秒) 取得・変換タブ */
 export function UnixTimeTool() {
   const { copy } = useCopy()
   const [now, setNow] = useState(() => Date.now())
