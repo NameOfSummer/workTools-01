@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  /* NISHIKIGOI-inspired palette: crimson, navy, sakura cream */
+  --color-background: #faf7f2;
+  --color-foreground: #1a1a2e;
+  --color-card: #ffffff;
+  --color-card-foreground: #1a1a2e;
+  --color-primary: #b22234;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #1b3a6b;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #f0e8e0;
+  --color-muted-foreground: #5c5c6e;
+  --color-accent: #e8b4b8;
+  --color-accent-foreground: #1a1a2e;
+  --color-destructive: #8b1a2b;
+  --color-border: #e0d5cc;
+  --color-input: #e0d5cc;
+  --color-ring: #b22234;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(
+    160deg,
+    var(--color-background) 0%,
+    #f5ebe3 40%,
+    #f8f0f2 100%
+  );
+  color: var(--color-foreground);
+  font-family:
+    "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP",
+    system-ui,
+    sans-serif;
+}
