@@ -1,7 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" fill="#f8f0e5"/>
-  <rect width="32" height="10" fill="#ffffff"/>
-  <rect y="10" width="32" height="6" fill="#dde5f0"/>
-  <rect y="16" width="32" height="16" fill="#de091d"/>
-  <text x="16" y="26" text-anchor="middle" fill="#ffffff" font-family="system-ui,sans-serif" font-size="9" font-weight="bold">WT</text>
+  <rect width="10.67" height="10.67" fill="#de091d"/>
+  <rect x="10.67" width="10.67" height="10.67" fill="#f8f0e5"/>
+  <rect x="21.33" width="10.67" height="10.67" fill="#ffffff"/>
+  <rect y="10.67" width="10.67" height="10.67" fill="#f8f0e5"/>
+  <rect x="10.67" y="10.67" width="10.67" height="10.67" fill="#ffffff"/>
+  <rect x="21.33" y="10.67" width="10.67" height="10.67" fill="#de091d"/>
+  <rect y="21.33" width="10.67" height="10.67" fill="#ffffff"/>
+  <rect x="10.67" y="21.33" width="10.67" height="10.67" fill="#de091d"/>
+  <rect x="21.33" y="21.33" width="10.67" height="10.67" fill="#f8f0e5"/>
 </svg>
