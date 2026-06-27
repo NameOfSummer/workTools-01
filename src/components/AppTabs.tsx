@@ -129,39 +129,6 @@ function useTabLabelMode() {
   return { iconOnly, shortLabel, fullLabel }
 }
 
-function LabelWithTooltip({
-  label,
-  showTooltip,
-  className,
-  children,
-  onMouseEnter,
-}: {
-  label: string
-  showTooltip: boolean
-  className?: string
-  children: ReactNode
-  onMouseEnter?: () => void
-}) {
-  if (!showTooltip) {
-    return (
-      <span className={className} onMouseEnter={onMouseEnter}>
-        {children}
-      </span>
-    )
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className={className} onMouseEnter={onMouseEnter}>
-          {children}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">{label}</TooltipContent>
-    </Tooltip>
-  )
-}
-
 interface TabTriggerItemProps {
   id: TabId
   icon: LucideIcon
@@ -211,9 +178,31 @@ function TabTriggerItem({
     return () => window.removeEventListener('resize', checkTruncation)
   }, [checkTruncation, label, labelShort, iconOnly, shortLabel, fullLabel])
 
-  const showFullTooltip = fullLabel && fullTruncated
-  const showShortTooltip = shortLabel && (shortTruncated || labelShort !== label)
-  const showIconTooltip = iconOnly
+  const showTooltip =
+    iconOnly ||
+    (fullLabel && fullTruncated) ||
+    (shortLabel && (shortTruncated || labelShort !== label))
+
+  const tabContent = (
+    <span
+      className={cn(
+        'inline-flex min-w-0 w-full flex-1 items-center justify-center',
+        'gap-0 px-1 py-2 min-[400px]:gap-1 min-[400px]:px-2 min-[640px]:gap-1.5 min-[640px]:px-3'
+      )}
+      onMouseEnter={checkTruncation}
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <span ref={fullLabelRef} className="hidden truncate min-[640px]:inline">
+        {label}
+      </span>
+      <span
+        ref={shortLabelRef}
+        className="hidden truncate min-[400px]:inline min-[640px]:hidden"
+      >
+        {labelShort}
+      </span>
+    </span>
+  )
 
   return (
     <TabsTrigger
@@ -223,40 +212,22 @@ function TabTriggerItem({
       onDragOver={(e) => onDragOver(id, e)}
       onDrop={(e) => onDrop(id, e)}
       onDragEnd={onDragEnd}
-      onMouseEnter={checkTruncation}
       className={cn(
-        'min-w-0 flex-1 gap-0 px-1 py-2 cursor-grab active:cursor-grabbing min-[400px]:gap-1 min-[400px]:px-2 min-[640px]:gap-1.5 min-[640px]:px-3',
+        'min-w-0 flex-1 p-0 cursor-grab active:cursor-grabbing',
         draggedId === id && 'opacity-50',
         dragOverId === id &&
           draggedId !== id &&
           'ring-2 ring-primary ring-offset-0'
       )}
     >
-      <LabelWithTooltip
-        label={label}
-        showTooltip={showIconTooltip}
-        className="inline-flex shrink-0"
-      >
-        <Icon className="h-4 w-4" />
-      </LabelWithTooltip>
-      <span
-        ref={fullLabelRef}
-        className="hidden truncate min-[640px]:inline"
-        onMouseEnter={checkTruncation}
-      >
-        <LabelWithTooltip label={label} showTooltip={showFullTooltip}>
-          {label}
-        </LabelWithTooltip>
-      </span>
-      <span
-        ref={shortLabelRef}
-        className="hidden truncate min-[400px]:inline min-[640px]:hidden"
-        onMouseEnter={checkTruncation}
-      >
-        <LabelWithTooltip label={label} showTooltip={showShortTooltip}>
-          {labelShort}
-        </LabelWithTooltip>
-      </span>
+      {showTooltip ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{tabContent}</TooltipTrigger>
+          <TooltipContent side="bottom">{label}</TooltipContent>
+        </Tooltip>
+      ) : (
+        tabContent
+      )}
     </TabsTrigger>
   )
 }

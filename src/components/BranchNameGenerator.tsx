@@ -35,7 +35,7 @@ export function BranchNameGenerator() {
 
   const generate = () => {
     if (!canGenerate) {
-      setError('Jira 課題コードとタスク管理番号を入力してください')
+      setError('Jira 課題コードとタスクNo.を入力してください')
       return
     }
     const dev = buildBranchName(jiraCode, taskNumber, 'dev')
@@ -99,7 +99,7 @@ export function BranchNameGenerator() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="task-number">タスク管理番号</Label>
+            <Label htmlFor="task-number">タスクNo.</Label>
             <Input
               id="task-number"
               placeholder="TASK-001"

@@ -25,7 +25,7 @@ export function SettingsDialog() {
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0"
+          className="shrink-0 text-[#4a4a4a] hover:bg-secondary-hover hover:text-[#4a4a4a]"
           aria-label="設定"
         >
           <Settings className="h-5 w-5" />
